@@ -62,8 +62,13 @@ function ukfPredict!(est::Estimate, propFun)
     for i in 1:twoNp1
         newCov += Wc[i] * (ChiP[:, i] - newState) * (ChiP[:, i] - newState)'
     end
-
-    newCov += est.Q
+    # display(est.MeasurementApplied)
+    # if est.MeasWithoutUpdate < 3
+    if est.MeasWithoutUpdate >= 0
+        newCov += est.Q
+    else
+        newCov += (1e4 * est.Q)
+    end
 
     est.Cov = newCov
     est.Mean = newState
@@ -194,5 +199,5 @@ function getInitialEstimate(ephem::Ephemeris, priorCov::Matrix{Float64}; Q::Matr
 
     useQ = maximum(Q) > 0 ? copy(Q) : copy(ephem.Q)
 
-    return Estimate(ephem.ObjectID, mean, priorCov, 0.0, false, useQ)
+    return Estimate(ephem.ObjectID, mean, priorCov, 0.0, false, useQ, 0)
 end

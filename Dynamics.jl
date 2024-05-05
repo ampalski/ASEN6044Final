@@ -54,14 +54,43 @@ function buildEphem(initState, dt, T, Q, mnvs)
     return (t, ephem)
 end
 
-function buildAllEphem()
+function buildStaEphem(; T=86400 * 2)
     astra1n = [-6802.42001282, -41613.740202976, -16.635482581, 3.03431508625, -0.496188946, -0.002621748732]
     astra1kr = [-6831.6984448575, -41591.05550192, 11.30691110203, 3.0350724847, -0.4995285472, 0.00181828073]
     astra1m = [-6770.100593874, -41615.97196304, 16.3729861001, 3.034714047137, -0.4951056425, -0.0020695362]
     astra1l = [-6817.442654717, -41593.8697042, -18.525171834, 3.035210337, -0.498058414, 0.000985242]
     # 10/25/23 at 13:51:10
 
-    T = 86400 * 2
+    dt = 10
+    Q = zeros(6, 6)
+    #J2 accel is ~1e-8, velocity is 1e-7 for 10s, pos is 5e-7 for 10 s, squared
+    Q[1, 1] = 2.5e-13
+    Q[2, 2] = 2.5e-13
+    Q[3, 3] = 2.5e-13
+    Q[4, 4] = 1e-14
+    Q[5, 5] = 1e-14
+    Q[6, 6] = 1e-14
+
+    mnvs = zeros(2)
+
+    t, ephem = buildEphem(astra1n, dt, T, Q, mnvs)
+    astra1nStationary = Ephemeris(t, ephem, 1, 0.95, Q)
+    t, ephem = buildEphem(astra1kr, dt, T, Q, mnvs)
+    astra1krStationary = Ephemeris(t, ephem, 2, 0.95, Q)
+    t, ephem = buildEphem(astra1m, dt, T, Q, mnvs)
+    astra1mStationary = Ephemeris(t, ephem, 3, 0.95, Q)
+    t, ephem = buildEphem(astra1l, dt, T, Q, mnvs)
+    astra1lStationary = Ephemeris(t, ephem, 4, 0.95, Q)
+
+    return (astra1nStationary, astra1krStationary, astra1mStationary, astra1lStationary)
+end
+function buildAllEphem(; T=86400 * 2)
+    astra1n = [-6802.42001282, -41613.740202976, -16.635482581, 3.03431508625, -0.496188946, -0.002621748732]
+    astra1kr = [-6831.6984448575, -41591.05550192, 11.30691110203, 3.0350724847, -0.4995285472, 0.00181828073]
+    astra1m = [-6770.100593874, -41615.97196304, 16.3729861001, 3.034714047137, -0.4951056425, -0.0020695362]
+    astra1l = [-6817.442654717, -41593.8697042, -18.525171834, 3.035210337, -0.498058414, 0.000985242]
+    # 10/25/23 at 13:51:10
+
     dt = 10
     Q = zeros(6, 6)
     #J2 accel is ~1e-8, velocity is 1e-7 for 10s, pos is 5e-7 for 10 s, squared
@@ -113,6 +142,7 @@ end
 # T = 86400 * 2.0
 
 # astra1nStationary, astra1krStationary, astra1mStationary, astra1lStationary, astra1nManeuver, astra1krManeuver, astra1mManeuver, astra1lManeuver = buildAllEphem()
+astra1nStationary2, astra1krStationary2, astra1mStationary2, astra1lStationary2 = buildStaEphem(T=21600)
 
 # prob = ODEProblem(InertialOrbit, astra1n, (0, T), zeros(3))
 # sol = solve(prob, Tsit5(), reltol=1e-12, abstol=1e-12, tstops=0:dt:T)

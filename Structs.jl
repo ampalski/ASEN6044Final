@@ -24,6 +24,7 @@ mutable struct Estimate
     CurrentTime::Float64
     MeasurementApplied::Bool
     Q::Matrix{Float64}
+    MeasWithoutUpdate::Int64
 end
 
 mutable struct Particle

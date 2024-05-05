@@ -23,6 +23,9 @@ function RBMCDACorrect!(
     particleHist = zeros(nMeas)
     for i in eachindex(particles)
         push!(particles[i].assocHistory, particleHist)
+        for t in eachindex(particles[i].estimates)
+            particles[i].estimates[t].MeasWithoutUpdate += 1
+        end
     end
     for m in shuffle(1:nMeas)
         allPredMeas = fill(zeros(2), nParticles, nEsts)
@@ -69,6 +72,7 @@ function RBMCDACorrect!(
                 particles[i].estimates[ck].Mean = newState
                 particles[i].estimates[ck].Cov = newCov
                 particles[i].estimates[ck].MeasurementApplied = true
+                particles[i].estimates[ck].MeasWithoutUpdate = 0
             end
             # Calculate new weights
             # display("$(particles[i].weight) * $(ckPrior) * $(measLikelihood[ck]) / $(πhat[ck])")
@@ -102,7 +106,7 @@ function getMmseEstimate(particles::Vector{Particle})
             mean += weight .* particle.estimates[i].Mean
             cov += weight .* particle.estimates[i].Cov
         end
-        push!(mmse, Estimate(i, mean, cov, particles[1].estimates[i].CurrentTime, true, particles[1].estimates[i].Q))
+        push!(mmse, Estimate(i, mean, cov, particles[1].estimates[i].CurrentTime, true, particles[1].estimates[i].Q, 0))
     end
     return mmse
 end
@@ -132,7 +136,7 @@ function getRBMCDAAssocErrors(measurements::Vector{Vector{Measurement}})
     # 4 means cross-tag, reports the % of time measurement associated to wrong target
     # 5 is % of time we get correct assoc.
     associations = zeros(5, length(measurements), 4)
-    for t in 1:200 #eachindex(measurements)
+    for t in eachindex(measurements)
         estFound = falses(4)
         for measurement in measurements[t]
             est = measurement.TrueTgtID
@@ -159,4 +163,12 @@ function getRBMCDAAssocErrors(measurements::Vector{Vector{Measurement}})
         end
     end
     return associations
+end
+
+function getRBMCDAStats(measurements::Vector{Vector{Measurement}})
+    assoc = getRBMCDAAssocErrors(measurements)
+    display("SC1 Correct Association: $(mean(assoc[5,:,1]))")
+    display("SC2 Correct Association: $(mean(assoc[5,:,2]))")
+    display("SC3 Correct Association: $(mean(assoc[5,:,3]))")
+    display("SC4 Correct Association: $(mean(assoc[5,:,4]))")
 end

@@ -164,9 +164,17 @@ function getMinMaxAngles(measurements::Vector{Measurement})
     return (minRA, maxRA, minDec, maxDec)
 end
 # stationaryEphem = [astra1nStationary, astra1krStationary, astra1mStationary, astra1lStationary]
+# stationaryEphem2 = [astra1nStationary2, astra1krStationary2, astra1mStationary2, astra1lStationary2]
 # maneuverEphem = [astra1nManeuver, astra1krManeuver, astra1mManeuver, astra1lManeuver]
 
 # allMeasStationary = generateMeas(stationaryEphem, 2)
 # allMeasManeuver = generateMeas(maneuverEphem, 2)
 # allMeasStationaryNoisy = generateMeas(stationaryEphem, 2)
 # allMeasManeuverNoisy = generateMeas(maneuverEphem, 2)
+
+# allMeasStationary5 = generateMeas(stationaryEphem2, 5)
+# allMeasStationary10 = generateMeas(stationaryEphem2, 10)
+# allMeasStationary25 = generateMeas(stationaryEphem2, 25)
+# allMeasStationary50 = generateMeas(stationaryEphem2, 50)
+# allMeasStationary100 = generateMeas(stationaryEphem2, 100)
+# jldsave("src/MeasLambda.jld2"; allMeasStationary5, allMeasStationary10, allMeasStationary25, allMeasStationary50, allMeasStationary100)

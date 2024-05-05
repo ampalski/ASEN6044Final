@@ -67,6 +67,7 @@ function JPDACorrect!(
         end
         eventProbabilities[i] *= estTerm
     end
+    eventProbabilities ./= sum(eventProbabilities)
 
     # Create marginal probabilities
     betas = zeros(nEsts, nMeas + 1)
@@ -86,6 +87,7 @@ function JPDACorrect!(
 
     # Update estimates
     for t in 1:nEsts
+        ests[t].MeasWithoutUpdate += 1
         # Build the residual
         for j in 1:nMeas
             residuals[t] += betas[t, j] * allResids[t, j]
@@ -103,6 +105,9 @@ function JPDACorrect!(
         ests[t].Cov = ests[t].Cov + (betas[t, end] - 1) * Kmatrix[t, 1] * Smatrix[t, 1] * Kmatrix[t, 1]' + Ptilde
         ests[t].Mean += Kmatrix[t, 1] * residuals[t]
         ests[t].MeasurementApplied = true
+        if residuals[t] != zeros(p)
+            ests[t].MeasWithoutUpdate = 0
+        end
     end
 
     # Update measurements

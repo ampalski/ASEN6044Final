@@ -43,12 +43,14 @@ function GNNCorrect!(
     end
     for i in 1:nEsts
         measInd = findall(baseAssocVec[i, :] .== 1)
+        ests[i].MeasWithoutUpdate += 1
         if !isempty(measInd)
             j = measInd[1]
             newState, newCov, _ = applyUpdate(measurements[j], allPredMeas[i, j], wrapVec, p, ests[i], Smatrix[i, j], Kmatrix[i, j])
             ests[i].Mean = newState
             ests[i].Cov = newCov
             ests[i].MeasurementApplied = true
+            ests[i].MeasWithoutUpdate = 0
             residuals[i] = allResids[i, j]
         end
     end

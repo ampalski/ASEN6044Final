@@ -223,3 +223,38 @@ function plotAssocErrs(measurements::Vector{Vector{Measurement}})
     display(GLMakie.Screen(), fig)
 
 end
+
+function plotBetas(meas::Vector{Vector{Measurement}})
+    set_theme!(theme_black())
+    fig = Figure(size=(800, 1000))
+    ax1 = Axis(fig[1, 1])
+    ax1.xlabel = "Time (days)"
+    ax1.ylabel = "SC1 Association Status"
+    time = [meas[i][1].Time for i in eachindex(meas)]
+
+    nt = zeros(4)
+    avg = zeros(4)
+    betas = fill(NaN, length(meas), 4)
+    for i in eachindex(meas)
+        mt = meas[i]
+        for m in mt
+            id = m.TrueTgtID
+            if id >= 100
+                continue
+            end
+            nt[id] += 1
+            avg[id] += m.AssocVec[id]
+            betas[i, id] = m.AssocVec[id]
+        end
+    end
+    avg ./= nt
+    display(avg)
+
+    xplot = (1 / 86400) .* time
+    scatter!(ax1, xplot, betas[:, 1], label="SC1")
+    scatter!(ax1, xplot, betas[:, 2], label="SC2")
+    scatter!(ax1, xplot, betas[:, 3], label="SC3")
+    scatter!(ax1, xplot, betas[:, 4], label="SC4")
+    axislegend(ax1; position=:rt)
+    display(GLMakie.Screen(), fig)
+end
